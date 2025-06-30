@@ -1,0 +1,138 @@
+
+package HomeTasks;
+
+
+
+import java.io.*;
+import java.util.*;
+
+public class EmployeeManagementSystem {
+    static final String FILE_NAME = "employees.txt";
+
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int choice;
+        do {
+            System.out.println("\n1. Add Employee\n2. View All\n3. Search\n4. Delete\n5. Update\n6. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt(); sc.nextLine();
+
+            switch (choice) {
+                case 1 -> addEmployee(sc);
+                case 2 -> viewEmployees();
+                case 3 -> searchEmployee(sc);
+                case 4 -> deleteEmployee(sc);
+                case 5 -> updateEmployee(sc);
+                case 6 -> System.out.println("Exiting...");
+                default -> System.out.println("Invalid choice.");
+            }
+        } while (choice != 6);
+    }
+
+    static void addEmployee(Scanner sc) throws IOException {
+        System.out.print("Enter ID: "); String id = sc.nextLine();
+        System.out.print("Enter Name: "); String name = sc.nextLine();
+        System.out.print("Enter Department: "); String dept = sc.nextLine();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true));
+        bw.write(id + "," + name + "," + dept);
+        bw.newLine();
+        bw.close();
+        System.out.println("Employee added.");
+    }
+
+    static void viewEmployees() throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(FILE_NAME));
+        String line;
+        System.out.println("ID\tName\tDepartment");
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split(",");
+            System.out.println(parts[0] + "\t" + parts[1] + "\t" + parts[2]);
+        }
+        br.close();
+    }
+
+    static void searchEmployee(Scanner sc) throws IOException {
+        System.out.print("Enter ID to search: ");
+        String id = sc.nextLine();
+        BufferedReader br = new BufferedReader(new FileReader(FILE_NAME));
+        String line;
+        boolean found = false;
+        while ((line = br.readLine()) != null) {
+            if (line.startsWith(id + ",")) {
+                String[] parts = line.split(",");
+                System.out.println("Found: " + parts[0] + ", " + parts[1] + ", " + parts[2]);
+                found = true;
+                break;
+            }
+        }
+        br.close();
+        if (!found) System.out.println("Employee not found.");
+    }
+
+    static void deleteEmployee(Scanner sc) throws IOException {
+        System.out.print("Enter ID to delete: ");
+        String id = sc.nextLine();
+        File inputFile = new File(FILE_NAME);
+        File tempFile = new File("temp.txt");
+
+        try (
+            BufferedReader br = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
+        ) {
+            String line;
+            boolean deleted = false;
+            while ((line = br.readLine()) != null) {
+                if (!line.startsWith(id + ",")) {
+                    bw.write(line);
+                    bw.newLine();
+                } else {
+                    deleted = true;
+                }
+            }
+            if (deleted) {
+                inputFile.delete();
+                tempFile.renameTo(inputFile);
+                System.out.println("Employee deleted.");
+            } else {
+                tempFile.delete();
+                System.out.println("ID not found.");
+            }
+        }
+    }
+
+    static void updateEmployee(Scanner sc) throws IOException {
+        System.out.print("Enter ID to update: ");
+        String id = sc.nextLine();
+        File inputFile = new File(FILE_NAME);
+        File tempFile = new File("temp.txt");
+
+        try (
+            BufferedReader br = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
+        ) {
+            String line;
+            boolean updated = false;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(id + ",")) {
+                    System.out.print("Enter new Name: ");
+                    String name = sc.nextLine();
+                    System.out.print("Enter new Department: ");
+                    String dept = sc.nextLine();
+                    bw.write(id + "," + name + "," + dept);
+                    updated = true;
+                } else {
+                    bw.write(line);
+                }
+                bw.newLine();
+            }
+            if (updated) {
+                inputFile.delete();
+                tempFile.renameTo(inputFile);
+                System.out.println("Employee updated.");
+            } else {
+                tempFile.delete();
+                System.out.println("ID not found.");
+            }
+        }
+    }
+}
